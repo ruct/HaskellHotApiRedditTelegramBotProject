@@ -14,8 +14,8 @@ import Control.Lens
 redditHotApiRequest :: DB.ByteString -> IO BLU.ByteString
 redditHotApiRequest token = do
   let opts = defaults & manager .~ Left (opensslManagerSettings context)
-                      & header "Authorization" .~ [DB.concat ["bearer", token]]
+                      & header "Authorization" .~ [DB.concat ["bearer ", token]]
                       & header "User-Agent" .~ ["APP-NAME by REDDIT-USERNAME"]
   r <- withOpenSSL $
-    getWith opts "https://oauth.reddit.com/hot"
+    getWith opts "https://oauth.reddit.com/api/v1/me/friends"
   return $ r ^. responseBody
