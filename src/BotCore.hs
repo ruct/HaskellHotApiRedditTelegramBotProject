@@ -14,8 +14,18 @@ import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
 
+import Data.IORef
+import System.IO.Unsafe (unsafePerformIO)
+
+
+redditTokenRef :: IORef String
+redditTokenRef =
+  unsafePerformIO (newIORef "")
+
 runBot :: Token -> String -> IO ()
 runBot botToken redditToken = do
+  modifyIORef' redditTokenRef (\token -> redditToken)
+  readIORef redditTokenRef >>= print
   env <- defaultTelegramClientEnv botToken
   startBot_ redditBot env
 
