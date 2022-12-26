@@ -1,5 +1,5 @@
 cabal-version:      2.4
-name:               hot-reddit
+name:               HotReddit
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
@@ -22,13 +22,13 @@ maintainer:         flyce32@yandex.ru
 extra-source-files: CHANGELOG.md
 
 library
-  exposed-modules: Lib, RedditJson
+  exposed-modules: RequestLib, RedditJson
   hs-source-dirs: src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends: base >=4.7 && <5, text, http-client, http-client-tls, http-client-openssl, HsOpenSSL, bytestring, utf8-string, wreq, lens, aeson, generic-aeson
   default-language: Haskell2010
 
-executable hot-reddit
+executable HotReddit
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
@@ -36,7 +36,7 @@ executable hot-reddit
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.16.4.0, hot-reddit, utf8-string
+    build-depends:    base ^>=4.16.3.0, HotReddit, utf8-string
     hs-source-dirs:   app
     default-language: Haskell2010
     ghc-options: -threaded -rtsopts

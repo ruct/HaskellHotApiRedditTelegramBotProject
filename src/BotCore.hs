@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# LANGUAGE PackageImports #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 module BotCore
   ( runBot,
@@ -9,20 +9,15 @@ where
 
 import Common.FlipCoin
 import Control.Applicative
-import Control.Monad.IO.Class
-
+import Control.Monad.IO.Class (MonadIO (liftIO))
+import Data.IORef
 import Data.Text as TS
-import Data.Text.Lazy.Encoding as TLE
-import Data.Text.Lazy as TL
-
+import RedditJson
+import RequestLib
+import System.IO.Unsafe (unsafePerformIO)
 import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
-
-import Data.IORef
-import System.IO.Unsafe (unsafePerformIO)
-
-import "hot-reddit" Lib (redditHotApiRequest)
 
 redditTokenRef :: IORef String
 redditTokenRef =
@@ -30,7 +25,7 @@ redditTokenRef =
 
 runBot :: Token -> String -> IO ()
 runBot botToken redditToken = do
-  modifyIORef' redditTokenRef (\_ -> redditToken)
+  modifyIORef' redditTokenRef (const redditToken)
   env <- defaultTelegramClientEnv botToken
   startBot_ redditBot env
 
@@ -42,7 +37,7 @@ data Action
   | Friends
   deriving (Show, Read)
 
-redditBot :: BotApp Model Action
+redditBot :: BotApp BotCore.Model Action
 redditBot =
   BotApp
     { botInitialModel = (),
@@ -51,7 +46,7 @@ redditBot =
       botJobs = []
     }
 
-updateToAction :: Model -> Update -> Maybe Action
+updateToAction :: BotCore.Model -> Update -> Maybe Action
 updateToAction _ =
   parseUpdate $
     Start <$ command "start"
@@ -76,10 +71,11 @@ startMessage =
       "Wir trinken zusammen - Nicht allein",
       "",
       "/start -- show start message",
-      "/coin -- flip a coin (0/1)"
+      "/coin -- flip a coin (0/1)",
+      "/friends -- show your reddit friends"
     ]
 
-handleAction :: Action -> Model -> Eff Action Model
+handleAction :: Action -> BotCore.Model -> Eff Action BotCore.Model
 handleAction action model = case action of
   Start ->
     model <# do
@@ -92,4 +88,9 @@ handleAction action model = case action of
     model <# do
       redditToken <- liftIO $ readIORef redditTokenRef
       res <- liftIO $ redditHotApiRequest redditToken
-      replyText (TL.toStrict (TLE.decodeUtf8 res))
+      let (Just resp) = parseRedditJson res
+      let ch = dataChildren (modelData resp)
+      replyText $ intercalate "\n" $ formatChildren ch
+
+formatChildren :: [Children] -> [TS.Text]
+formatChildren chs = [childrenName ch | ch <- chs]
