@@ -11,4 +11,4 @@ main = do
   let (botTokenStr:redditToken:_) = lines contents
   let botToken = Token (Text.pack (botTokenStr))
   putStrLn "running bot..."
-  runBot botToken -- redditToken
+  runBot botToken redditToken

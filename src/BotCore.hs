@@ -14,9 +14,9 @@ import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
 
-runBot :: Token -> IO ()
-runBot token = do
-  env <- defaultTelegramClientEnv token
+runBot :: Token -> String -> IO ()
+runBot botToken redditToken = do
+  env <- defaultTelegramClientEnv botToken
   startBot_ redditBot env
 
 type Model = ()
