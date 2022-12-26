@@ -6,7 +6,9 @@ import Telegram.Bot.API
 
 main :: IO ()
 main = do
-  let tokenPath = "token.txt"
-  token <- Token . Text.pack <$> readFile tokenPath
+  let tokensPath = "token.txt"
+  contents <- readFile tokensPath
+  let (botTokenStr:redditToken:_) = lines contents
+  let botToken = Token (Text.pack (botTokenStr))
   putStrLn "running bot..."
-  runBot token
+  runBot botToken -- redditToken
