@@ -93,4 +93,4 @@ handleAction action model = case action of
       replyText $ intercalate "\n" $ formatChildren ch
 
 formatChildren :: [Children] -> [TS.Text]
-formatChildren chs = [childrenName ch | ch <- chs]
+formatChildren chs = [ TS.concat [(TS.pack "- "), (childrenName ch)] | ch <- chs]
