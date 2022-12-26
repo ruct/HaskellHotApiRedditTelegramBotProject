@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# LANGUAGE PackageImports #-}
 
 module BotCore
   ( runBot,
@@ -17,6 +18,7 @@ import Telegram.Bot.Simple.UpdateParser
 import Data.IORef
 import System.IO.Unsafe (unsafePerformIO)
 
+import "hot-reddit" Lib (redditHotApiRequest)
 
 redditTokenRef :: IORef String
 redditTokenRef =
@@ -81,3 +83,9 @@ handleAction action model = case action of
     model <# do
       resp <- liftIO $ pack . show <$> flipCoin
       replyText resp
+--  Friends ->
+--    model <# do
+--      redditToken <- readIORef redditTokenRef
+--      let res = redditHotApiRequest redditToken
+--      print res
+--      replyText "kek"

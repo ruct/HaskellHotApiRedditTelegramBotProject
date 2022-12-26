@@ -37,6 +37,7 @@ library
     , telegram-bot-simple
     , text
     , random
+    , hot-reddit
   ghc-options:
       -Wall
       -Wcompat
