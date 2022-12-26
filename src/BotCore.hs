@@ -10,7 +10,11 @@ where
 import Common.FlipCoin
 import Control.Applicative
 import Control.Monad.IO.Class
-import Data.Text
+
+import Data.Text as TS
+import Data.Text.Lazy.Encoding as TLE
+import Data.Text.Lazy as TL
+
 import Telegram.Bot.API
 import Telegram.Bot.Simple
 import Telegram.Bot.Simple.UpdateParser
@@ -26,8 +30,7 @@ redditTokenRef =
 
 runBot :: Token -> String -> IO ()
 runBot botToken redditToken = do
-  modifyIORef' redditTokenRef (\token -> redditToken)
-  readIORef redditTokenRef >>= print
+  modifyIORef' redditTokenRef (\_ -> redditToken)
   env <- defaultTelegramClientEnv botToken
   startBot_ redditBot env
 
@@ -36,6 +39,7 @@ type Model = ()
 data Action
   = Start
   | Coin
+  | Friends
   deriving (Show, Read)
 
 redditBot :: BotApp Model Action
@@ -52,11 +56,12 @@ updateToAction _ =
   parseUpdate $
     Start <$ command "start"
       <|> Coin <$ command "coin"
+      <|> Friends <$ command "friends"
       <|> callbackQueryDataRead
 
-startMessage :: Text
+startMessage :: TS.Text
 startMessage =
-  Data.Text.unlines
+  TS.unlines
     [ "Was wollen wir trinken? - Sieben Tage lang",
       "Was wollen wir trinken? - So ein Durst",
       "Was wollen wir trinken? - Sieben Tage lang",
@@ -81,11 +86,10 @@ handleAction action model = case action of
       replyText startMessage
   Coin ->
     model <# do
-      resp <- liftIO $ pack . show <$> flipCoin
+      resp <- liftIO $ TS.pack . show <$> flipCoin
       replyText resp
---  Friends ->
---    model <# do
---      redditToken <- readIORef redditTokenRef
---      let res = redditHotApiRequest redditToken
---      print res
---      replyText "kek"
+  Friends ->
+    model <# do
+      redditToken <- liftIO $ readIORef redditTokenRef
+      res <- liftIO $ redditHotApiRequest redditToken
+      replyText (TL.toStrict (TLE.decodeUtf8 res))
