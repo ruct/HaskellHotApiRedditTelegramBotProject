@@ -1,6 +1,12 @@
 module Main (main) where
 
-import Lib
+import BotCore
+import qualified Data.Text as Text
+import Telegram.Bot.API
 
 main :: IO ()
-main = someFunc
+main = do
+  let tokenPath = "token.txt"
+  token <- Token . Text.pack <$> readFile tokenPath
+  putStrLn "running bot..."
+  runBot token
